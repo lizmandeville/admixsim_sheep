@@ -2,19 +2,178 @@
 
 source("simulate_func.R")
 
-## Simulations for 1000 ind, 11 generations, starting proportions of 0.5, 0.75, 0.9
+## New for sheep paper
 
-start0.5 <- simulate.hyb(1000,0.5,11)
-start0.25 <- simulate.hyb(1000,0.25,11)
-start0.05 <- simulate.hyb(1000,0.05,11)
-start0.1 <- simulate.hyb(1000,0.1,12)
+########################################
+## 1) Simulate different starting proportions - 0.1, 0.25, 0.5
+## 20,50,100 ind total, 10 gen
 
-## make this fig including colors
+## Result: very skewed starting proportions look similar to empirical results at ~ gen 5, but later generations turn to all hybrids rather than a mix of parentals and backcrosses. Starting pop size doesn't seem to matter much at these numbers.
 
-##pdf("sim_5gen_1000ind.pdf", width=12,height=4)
-pdf("sim_5gen_10gen_1000ind.pdf", width=8,height=6)
+start0.1nind20 <- simulate.hyb(nind.start=20, prop.sp1=0.1)
+start0.25nind20 <- simulate.hyb(nind.start=20, prop.sp1=0.25)
+start0.5nind20 <- simulate.hyb(nind.start=20, prop.sp1=0.5)
 
-par(mfrow=c(2,3))
+start0.1nind50 <- simulate.hyb(nind.start=50, prop.sp1=0.1)
+start0.25nind50 <- simulate.hyb(nind.start=50, prop.sp1=0.25)
+start0.5nind50 <- simulate.hyb(nind.start=50, prop.sp1=0.5)
+
+start0.1nind100 <- simulate.hyb(nind.start=100, prop.sp1=0.1)
+start0.25nind100 <- simulate.hyb(nind.start=100, prop.sp1=0.25)
+start0.5nind100 <- simulate.hyb(nind.start=100, prop.sp1=0.5)
+
+## 1b) Same thing but with population growth, just 50 ind. Skewed starting proportions still looks most like empirical results
+start0.1grow1.25 <- simulate.hyb(nind.start=50, prop.sp1=0.1, growth.rate=1.25)
+start0.25grow1.25 <- simulate.hyb(nind.start=50, prop.sp1=0.25, growth.rate=1.25)
+start0.5grow1.25 <- simulate.hyb(nind.start=50, prop.sp1=0.5, growth.rate=1.25)
+
+
+## 2) Simulate replicates of small sample size introductions - 10 reps, 20,50,100 ind, equal proportions from both sources, 5 or 10 gen
+## Results: variation across replicates even under simplest conditions (no selection, growth, immigration, etc.). More variability across replicates with fewer individuals, fewer generations.
+
+repsim(nrep=10, nind.start=20, n.generation=10)
+repsim(nrep=10, nind.start=20, n.generation=5)
+
+repsim(nrep=10, nind.start=50, n.generation=10)
+repsim(nrep=10, nind.start=50, n.generation=5)
+
+repsim(nrep=10, nind.start=100, n.generation=10)
+repsim(nrep=10, nind.start=100, n.generation=5)
+
+## Large sample size for contrast too
+
+repsim(nrep=10, nind.start=1000, n.generation=10)
+repsim(nrep=10, nind.start=1000, n.generation=5)
+
+## 2b) Add population growth
+
+repsim(nrep=10, nind.start=20, n.generation=10, growth.rate=1.25)
+repsim(nrep=10, nind.start=20, n.generation=5, growth.rate=1.25)
+
+repsim(nrep=10, nind.start=50, n.generation=10, growth.rate=1.25)
+repsim(nrep=10, nind.start=50, n.generation=5, growth.rate=1.25)
+
+repsim(nrep=10, nind.start=100, n.generation=10, growth.rate=1.25)
+repsim(nrep=10, nind.start=100, n.generation=5, growth.rate=1.25)
+
+## 2c) Add some selection. Results: selection adds to stochasticity across replicates. This is true even with a lot of individuals.
+repsim(nrep=10, nind.start=20, n.generation=10, sel=0.2)
+repsim(nrep=10, nind.start=20, n.generation=5, sel=0.2)
+
+repsim(nrep=10, nind.start=50, n.generation=10, sel=0.2)
+repsim(nrep=10, nind.start=50, n.generation=5, sel=0.2)
+
+repsim(nrep=10, nind.start=100, n.generation=10, sel=0.2)
+repsim(nrep=10, nind.start=100, n.generation=5, sel=0.2)
+
+
+## 3) Explore different strengths of selection against hybrids. Proceeding with 50 ind as starting. Results: selection has to be pretty strong in favor of parentals to produce lots of backcrosses/parentals (similar to empirical results).
+
+nind50sel1 <- simulate.hyb(nind.start=50, sel=1)
+nind50sel0.75 <- simulate.hyb(nind.start=50, sel=0.75)
+nind50sel0.5 <- simulate.hyb(nind.start=50, sel=0.5)
+nind50sel0.25 <- simulate.hyb(nind.start=50, sel=0.25)
+nind50sel0.1 <- simulate.hyb(nind.start=50, sel=0.1)
+
+pdf("nind50_10gen_selvaries.pdf", width=10, height=3)
+
+par(mfrow=c(1,5))
+
+plot(nind50sel1[[1]][11,],nind50sel1[[2]][11,], type="n", xlab="", ylab="", main="No selection", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel1[[1]][11,], nind50sel1[[2]][11,], col="gray45", cex=1.5)
+
+plot(nind50sel0.75[[1]][11,],nind50sel0.75[[2]][11,], type="n", xlab="", ylab="", main="Sel=0.75", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel0.75[[1]][11,], nind50sel0.75[[2]][11,], col="gray45", cex=1.5)
+
+plot(nind50sel0.5[[1]][11,],nind50sel0.5[[2]][11,], type="n", xlab="", ylab="", main="Sel=0.5", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel0.5[[1]][11,], nind50sel0.5[[2]][11,], col="gray45", cex=1.5)
+
+plot(nind50sel0.25[[1]][11,],nind50sel0.25[[2]][11,], type="n", xlab="", ylab="", main="Sel=0.25", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel0.25[[1]][11,], nind50sel0.25[[2]][11,], col="gray45", cex=1.5)
+
+plot(nind50sel0.1[[1]][11,],nind50sel0.1[[2]][11,], type="n", xlab="", ylab="", main="Sel=0.1", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel0.1[[1]][11,], nind50sel0.1[[2]][11,], col="gray45", cex=1.5)
+
+## Used mtext() to allow a multi-panel plot if desired.
+mtext("Proportion of ancestry (q)", side=1, outer=T, line=-1)
+mtext("Interspecific ancestry (Q)", side=2, outer=T, line=-1.5)
+
+
+dev.off()
+
+
+## Plot at 5 gen
+pdf("nind50_5gen_selvaries.pdf", width=10, height=3)
+
+par(mfrow=c(1,5))
+
+plot(nind50sel1[[1]][6,],nind50sel1[[2]][6,], type="n", xlab="", ylab="", main="No selection", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel1[[1]][6,], nind50sel1[[2]][6,], col="gray45", cex=1.5)
+
+plot(nind50sel0.75[[1]][6,],nind50sel0.75[[2]][6,], type="n", xlab="", ylab="", main="Sel=0.75", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel0.75[[1]][6,], nind50sel0.75[[2]][6,], col="gray45", cex=1.5)
+
+plot(nind50sel0.5[[1]][6,],nind50sel0.5[[2]][6,], type="n", xlab="", ylab="", main="Sel=0.5", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel0.5[[1]][6,], nind50sel0.5[[2]][6,], col="gray45", cex=1.5)
+
+plot(nind50sel0.25[[1]][6,],nind50sel0.25[[2]][6,], type="n", xlab="", ylab="", main="Sel=0.25", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel0.25[[1]][6,], nind50sel0.25[[2]][6,], col="gray45", cex=1.5)
+
+plot(nind50sel0.1[[1]][6,],nind50sel0.1[[2]][6,], type="n", xlab="", ylab="", main="Sel=0.1", axes=F, xlim=c(0,1), ylim=c(0,1))
+axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
+axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
+arrows(0,0,0.5,1, length=0, col="gray90")
+arrows(0.5,1,1,0, length=0, col="gray90")
+points(nind50sel0.1[[1]][6,], nind50sel0.1[[2]][6,], col="gray45", cex=1.5)
+
+## Used mtext() to allow a multi-panel plot if desired.
+mtext("Proportion of ancestry (q)", side=1, outer=T, line=-1)
+mtext("Interspecific ancestry (Q)", side=2, outer=T, line=-1.5)
+
+dev.off()
+
+####### Below is simple example plotting code left as a demonstration of  how to pull out and plot specific generations of q and Q
+
+# note that output matrix is n.generation +1 rows, so here 6 rows to include the starting individuals- hence "start0.5[[1]][6,]"
+start0.5 <- simulate.hyb(0.5,5)
+
+pdf("sim_5gen.pdf")
 
 plot(start0.5[[1]][6,], start0.5[[2]][6,], type="n", xlab="", ylab="", main="5 generations, Equal starting ratios", axes=F, xlim=c(0,1), ylim=c(0,1))
 axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
@@ -23,187 +182,10 @@ arrows(0,0,0.5,1, length=0, col="gray90")
 arrows(0.5,1,1,0, length=0, col="gray90")
 points(start0.5[[1]][6,], start0.5[[2]][6,], col="gray45", cex=1.5)
 
-plot(start0.25[[1]][6,], start0.25[[2]][6,], type="n", xlab="", ylab="", main="5 generations, 25% Species 1", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.25[[1]][6,], start0.25[[2]][6,], col="gray45", cex=1.5)
-
-plot(start0.1[[1]][6,], start0.1[[2]][6,], type="n", xlab="", ylab="", main="5 generations, 10% Species 1", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.1[[1]][6,], start0.1[[2]][6,], col="gray45", cex=1.5)
-
-plot(start0.5[[1]][11,], start0.5[[2]][11,], type="n", xlab="", ylab="", main="10 generations, Equal starting ratios", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.5[[1]][11,], start0.5[[2]][11,], col="gray45", cex=1.5)
-
-plot(start0.25[[1]][11,], start0.25[[2]][11,], type="n", xlab="", ylab="", main="10 generations, 25% Species 1", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.25[[1]][11,], start0.25[[2]][11,], col="gray45", cex=1.5)
-
-plot(start0.1[[1]][11,], start0.1[[2]][11,], type="n", xlab="", ylab="", main="10 generations, 10% Species 1", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.1[[1]][11,], start0.1[[2]][11,], col="gray45", cex=1.5)
-
+## Used mtext() to allow a multi-panel plot if desired.
 mtext("Proportion of ancestry (q)", side=1, outer=T, line=-1)
 mtext("Interspecific ancestry (Q)", side=2, outer=T, line=-1.5)
 
 dev.off()
 
 
-## Add some migrants
-
-source("simulate_func.R")
-
-## Simulations for 1000 ind, 11 generations, starting proportions of 0.5, 0.75, 0.9
-
-start0.5 <- simulate.hyb(1000,0.5,12,imm.sp1=0.25)
-start0.25 <- simulate.hyb(1000,0.25,12,imm.sp1=0.1,imm.sp2=0.1)
-start0.05 <- simulate.hyb(1000,0.05,11)
-start0.1 <- simulate.hyb(1000,0.1,12)
-
-## make this fig including colors
-
-##pdf("sim_5gen_1000ind.pdf", width=12,height=4)
-pdf("sim_5gen_10gen_1000ind.pdf", width=8,height=6)
-
-par(mfrow=c(2,3))
-
-plot(start0.5[[1]][6,], start0.5[[2]][6,], type="n", xlab="", ylab="", main="5 generations, Equal starting ratios", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.5[[1]][6,], start0.5[[2]][6,], col="gray45", cex=1.5)
-
-plot(start0.25[[1]][6,], start0.25[[2]][6,], type="n", xlab="", ylab="", main="5 generations, 25% Species 1", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.25[[1]][6,], start0.25[[2]][6,], col="gray45", cex=1.5)
-
-plot(start0.1[[1]][6,], start0.1[[2]][6,], type="n", xlab="", ylab="", main="5 generations, 10% Species 1", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.1[[1]][6,], start0.1[[2]][6,], col="gray45", cex=1.5)
-
-plot(start0.5[[1]][11,], start0.5[[2]][11,], type="n", xlab="", ylab="", main="10 generations, Equal starting ratios", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.5[[1]][11,], start0.5[[2]][11,], col="gray45", cex=1.5)
-
-plot(start0.25[[1]][11,], start0.25[[2]][11,], type="n", xlab="", ylab="", main="10 generations, 25% Species 1", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.25[[1]][11,], start0.25[[2]][11,], col="gray45", cex=1.5)
-
-plot(start0.1[[1]][11,], start0.1[[2]][11,], type="n", xlab="", ylab="", main="10 generations, 10% Species 1", axes=F, xlim=c(0,1), ylim=c(0,1))
-axis(1, at=c(0,0.5,1), labels=c(0,0.5,1))
-axis(2, at=c(0,0.5,1), labels=c(0,0.5,1))
-arrows(0,0,0.5,1, length=0, col="gray90")
-arrows(0.5,1,1,0, length=0, col="gray90")
-points(start0.1[[1]][11,], start0.1[[2]][11,], col="gray45", cex=1.5)
-
-mtext("Proportion of ancestry (q)", side=1, outer=T, line=-1)
-mtext("Interspecific ancestry (Q)", side=2, outer=T, line=-1.5)
-
-dev.off()
-
-
-#colnames(qQ) <- c("ind", "trib", "q", "Q", "classification")
-
-## Rewrite this to classify each individual
-
-
-
-for(i in 1:length(qQ[,1])){
-    if((qQ$q[i] >= 0.9) && (qQ$Q[i] <= 0.25)){
-      qQ$classification[i] <- "ysc"
-    }else if((qQ$q[i] <= 0.1) && (qQ$Q[i] <= 0.25)){
-      qQ$classification[i] <- "rbt"
-    }else if((qQ$q[i] > 0.4) && (qQ$q[i] < 0.6) && (qQ$Q[i] > 0.8)){
-      qQ$classification[i] <- "f1"
-    }else if((qQ$q[i]) > 0.4 && (qQ$q[i] < 0.6) && (qQ$Q[i] > 0.4) && (qQ$Q[i] < 0.6)){
-      qQ$classification[i] <- "f2"
-    }else if((qQ$q[i]) >= 0.15 && (qQ$q[i] <= 0.35) && (qQ$Q[i] > 0.4) && (qQ$Q[i] < 0.6)){
-      qQ$classification[i] <- "bc1.rbt"
-    }else if((qQ$q[i]) >= 0.65 && (qQ$q[i] <= 0.85) && (qQ$Q[i] > 0.4) && (qQ$Q[i] < 0.6)){
-      qQ$classification[i] <- "bc1.ysc"
-    }else if(((qQ$Q[i]-(2*qQ$q[i])) > -0.1) && ((qQ$Q[i]-(2*qQ$q[i])) < 0.1)){
-      qQ$classification[i] <- "bc.rbt"
-    }else if(((qQ$Q[i]+(2*qQ$q[i])) > 1.9) && ((qQ$Q[i]+(2*qQ$q[i])) < 2.1)){
-      qQ$classification[i] <- "bc.ysc"
-    }else{
-      qQ$classification[i] <- "other"
-    }
-
-}
-
-
-##########################3
-    ## Histogram of q for each generation
-    ## Replace with triangle plots
-    ## hist(q.allgen[i,], breaks=seq(0,1,0.05),xlab="Prop. Sp. 2 ancestry", main=paste("Gen.", i-1, sep=" "), axes=F, col="gray90")
-    ## axis(2)
-    ## axis(1, at=c(0,0.5,1))
-
-    ## Q.allgen[i,] <- rep(0, nind.start)
-    ## ## Calculate Q
-    ## for(j in 1:nind.start){
-
-    ##     if(q.allgen[i,j] == 0 | q.allgen[i,j] == 1){
-    ##         Q.allgen[i,j] <- 0 ## Parental species
-
-    ##     }else if(q.allgen[i,j] == 0.5 & (parent1[j] == 1 | parent1[j] == 0) & (parent2[j] == 1 | parent2[j] == 0)){
-
-    ##         Q.allgen[i,j] <- 1
-
-    ##     }else{
-
-    ##         Q.allgen[i,j] <- 5
-
-    ##     }
-
-
-    ## }
-
-##}
-
-dev.off()
-
-## pdf(paste("hist_",n.generation,"gen_",prop.sp1,"sp1_",nind.start,"ind.pdf",sep=""), width=6.5, height=9)
-
-
-##par(mfrow=c(ceiling(n.generation/4),4))
-##hist(q.allgen[1,], breaks=seq(0,1,0.05), xlab="Prop. Sp. 2 ancestry", main="Starting pop.", axes=F, col="gray90")
-
-##axis(2)
-##axis(1, at=c(0,0.5,1))
-
-## Histogram of q for each generation
-    ## Replace with triangle plots
-    ## hist(q.allgen[i,], breaks=seq(0,1,0.05),xlab="Prop. Sp. 2 ancestry", main=paste("Gen.", i-1, sep=" "), axes=F, col="gray90")
-    ## axis(2)
-    ## axis(1, at=c(0,0.5,1))
-
-    ## Q.allgen[i,] <- rep(0, nind.start)
